@@ -8,34 +8,29 @@ class Jwtap < Formula
   depends_on 'openssl'
   depends_on 'wget'
 
+  skip_clean 'logs'
+
   def install
     ohai 'Building Nginx + ngx_mruby + mruby-jwt (this may take some time)'
     openssl = Formula['openssl']
     ENV['NGINX_CONFIG_OPT_ENV'] = %W[
       --prefix=#{prefix}
+      --sbin-path=#{libexec/'nginx'}
       --with-cc-opt=-I#{openssl.include}
       --with-http_ssl_module
       --with-ld-opt=-L#{openssl.lib}
     ].join(' ')
     system 'bin/install-ngx_mruby'
 
-    # Copy access handler
+    # Create a symlink
+    bin.mkpath
+    bin.install_symlink libexec/'nginx' => bin/'jwtap'
+
+    # Copy the access handler
     lib.mkpath
     cp buildpath/'lib/jwtap/access_handler.rb', lib
 
-    # Create symlink
-    File.open sbin/'jwtap', 'w' do |f|
-      f.write <<-HEREDOC.undent
-        #!/usr/bin/env bash
-        #{sbin/'nginx'} -p #{prefix} "$@"
-      HEREDOC
-    end
-    (HOMEBREW_PREFIX/'bin').install_symlink sbin/'jwtap'
-  end
-
-  def post_install
     # Create the logs directory
-    # Creating this in #install does not work as it is deleted at some later point
     (prefix/'logs').mkpath
   end
 
