@@ -1,11 +1,12 @@
 class Jwtap < Formula
   desc 'JSON Web Token Authentication Proxy'
-  homepage 'https://github.com/dinosaurjr10/jwtap'
-  head 'https://github.com/dinosaurjr10/jwtap.git'
-  url 'https://github.com/dinosaurjr10/jwtap/archive/v0.4.0.tar.gz'
-  sha256 '9b8c4a85fe980dbb02eef313fdd74656388297aecf52aa09c238c266926b40e0'
+  homepage 'https://github.com/DaveWillkomm/jwtap'
+  head 'https://github.com/DaveWillkomm/jwtap.git'
+  url 'https://github.com/DaveWillkomm/jwtap/archive/v1.0.0.tar.gz'
+  sha256 'a0fc8faf340e0dfb494862034f3da32ef3cdab4dc09ed2b18e65a4dbb3e5592d'
 
   depends_on 'openssl'
+  depends_on 'pcre'
   depends_on 'wget'
 
   skip_clean 'logs'
