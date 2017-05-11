@@ -2,44 +2,49 @@ class Jwtap < Formula
   desc 'JSON Web Token Authentication Proxy'
   homepage 'https://github.com/DaveWillkomm/jwtap'
   head 'https://github.com/DaveWillkomm/jwtap.git'
-  url 'https://github.com/DaveWillkomm/jwtap/archive/v1.0.0.tar.gz'
-  sha256 'a0fc8faf340e0dfb494862034f3da32ef3cdab4dc09ed2b18e65a4dbb3e5592d'
+  url 'https://github.com/DaveWillkomm/jwtap/archive/v1.1.0.tar.gz'
+  sha256 '85543543ac67e0b8c9332a3ac3e5075a6c46a63fdeecb144723a672b74289421'
 
   depends_on 'openssl'
   depends_on 'pcre'
   depends_on 'wget'
 
-  skip_clean 'logs'
-
   def install
     ohai 'Building Nginx + ngx_mruby + mruby-jwt (this may take some time)'
     openssl = Formula['openssl']
     ENV['NGINX_CONFIG_OPT_ENV'] = %W[
+      --build=jwtap
+      --conf-path=#{etc}/jwtap/jwtap.conf
+      --error-log-path=#{var}/log/jwtap/error.log
+      --http-client-body-temp-path=#{var}/run/jwtap/client_body_temp
+      --http-fastcgi-temp-path=#{var}/run/jwtap/fastcgi_temp
+      --http-log-path=#{var}/log/jwtap/access.log
+      --http-proxy-temp-path=#{var}/run/jwtap/proxy_temp
+      --http-scgi-temp-path=#{var}/run/jwtap/scgi_temp
+      --http-uwsgi-temp-path=#{var}/run/jwtap/uwsgi_temp
+      --lock-path=#{var}/run/jwtap.lock
+      --pid-path=#{var}/run/jwtap.pid
       --prefix=#{prefix}
-      --sbin-path=#{libexec/'nginx'}
+      --sbin-path=#{bin}/jwtap
       --with-cc-opt=-I#{openssl.include}
       --with-http_ssl_module
       --with-ld-opt=-L#{openssl.lib}
     ].join(' ')
     system 'bin/install-ngx_mruby'
 
-    # Create a symlink
-    bin.mkpath
-    bin.install_symlink libexec/'nginx' => bin/'jwtap'
-
-    # Copy the access handler
-    lib.mkpath
-    cp buildpath/'lib/jwtap/access_handler.rb', lib
-
-    # Create the logs directory
-    (prefix/'logs').mkpath
+    # Copy lib
+    (buildpath/'lib').cp prefix
+    
+    # Create needed directories
+    (var/'run/jwtap').mkpath
   end
 
   def caveats
     <<-HEREDOC.undent
-      Access handler path: #{lib}/access_handler.rb
-      Edit the config:     #{prefix}/conf/nginx.conf
-      Start the app:       jwtap
+      Access handler path: #{lib}/jwtap.rb
+      Multi-path directive path: #{lib}/mruby_directive_paths.rb
+      Edit the config: #{etc}/jwtap/jwtap.conf
+      Start the app: jwtap
     HEREDOC
   end
 
