@@ -33,10 +33,10 @@ class Jwtap < Formula
     system 'bin/install-ngx_mruby'
 
     # Copy lib
-    (buildpath/'lib').cp prefix
-    
+    prefix.install Dir['lib']
+
     # Create needed directories
-    (var/'run/jwtap').mkpath
+    mkpath var/'run/jwtap'
   end
 
   def caveats
