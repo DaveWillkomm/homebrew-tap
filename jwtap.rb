@@ -5,9 +5,9 @@ class Jwtap < Formula
   url 'https://github.com/DaveWillkomm/jwtap/archive/v1.1.0.tar.gz'
   sha256 '85543543ac67e0b8c9332a3ac3e5075a6c46a63fdeecb144723a672b74289421'
 
-  depends_on 'openssl'
+  depends_on 'openssl@1.1'
   depends_on 'pcre'
-  depends_on 'wget'
+  depends_on 'wget' => :build
 
   def install
     ohai 'Building Nginx + ngx_mruby + mruby-jwt (this may take some time)'
