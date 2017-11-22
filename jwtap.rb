@@ -2,15 +2,25 @@ class Jwtap < Formula
   desc 'JSON Web Token Authentication Proxy'
   homepage 'https://github.com/DaveWillkomm/jwtap'
   head 'https://github.com/DaveWillkomm/jwtap.git'
-  url 'https://github.com/DaveWillkomm/jwtap/archive/v1.1.0.tar.gz'
-  sha256 '85543543ac67e0b8c9332a3ac3e5075a6c46a63fdeecb144723a672b74289421'
+  url 'https://github.com/DaveWillkomm/jwtap/archive/v1.2.0-homebrew.tar.gz'
+  sha256 '50f0408a20c7f481f25c22a634b76933cc9424a1c1138ffbbb8f084e99966899'
 
-  depends_on 'openssl@1.1'
+  # Install without Superenv because it removes the -I flag specified by NGX_MRUBY_CFLAGS.
+  # See https://stackoverflow.com/a/22260944/6130964 and http://www.rubydoc.info/github/Homebrew/brew/Superenv.
+  env :std
+
+  # See #caveats
+  #depends_on 'openssl'
+
   depends_on 'pcre'
   depends_on 'wget' => :build
 
   def install
     ohai 'Building Nginx + ngx_mruby + mruby-jwt (this may take some time)'
+
+    # See #caveats
+    system 'brew install openssl'
+
     openssl = Formula['openssl']
     ENV['NGINX_CONFIG_OPT_ENV'] = %W[
       --build=jwtap
@@ -30,7 +40,9 @@ class Jwtap < Formula
       --with-http_ssl_module
       --with-ld-opt=-L#{openssl.lib}
     ].join(' ')
-    system 'bin/install-ngx_mruby'
+    ENV['NGX_MRUBY_CFLAGS'] = "-I#{openssl.include}"
+    ENV['NGX_MRUBY_LDFLAGS'] = "-L#{openssl.lib} -lcrypto"
+    system 'bin/install_ngx_mruby.sh'
 
     # Copy lib
     prefix.install Dir['lib']
@@ -41,6 +53,10 @@ class Jwtap < Formula
 
   def caveats
     <<-HEREDOC.undent
+      NOTE: This formula depends on openssl and wget; however, because wget depends on openssl@1.1, this formula cannot
+            declare its dependency on openssl as Homebrew claims it is a circular dependency. Because of this,
+            brew install openssl is executed during installation.
+
       Access handler path: #{lib}/jwtap.rb
       Multi-path directive path: #{lib}/mruby_directive_paths.rb
       Edit the config: #{etc}/jwtap/jwtap.conf
